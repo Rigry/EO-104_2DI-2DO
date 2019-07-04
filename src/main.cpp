@@ -2,12 +2,8 @@
 #define F_CPU   48000000UL
 
 #include "periph_rcc.h"
-#include "flash.h"
-#include "pin.h"
-#include "modbus_slave.h"
-#include "literals.h"
 #include "init_clock.h"
-#include "counter.h"
+#include "flow.h"
 
 /// эта функция вызываеться первой в startup файле
 extern "C" void init_clock () { init_clock<8_MHz,F_CPU>(); }
@@ -24,7 +20,7 @@ using RTS = mcu::PA4;
 
 int main()
 {
-   decltype(auto) pin = Pin::make<DI1, mcu::PinMode::Input>();
+   decltype(auto) counter = Counter::make<mcu::Periph::TIM1, DI1>(450);
 
    Flash<Flash_data, mcu::FLASH::Sector::_8> flash{};
 
@@ -43,10 +39,10 @@ int main()
    using Flash  = decltype(flash);
    using Modbus = Modbus_slave<In_regs, Out_regs>;
 
-   Counter<Flash, Modbus> counter {pin, flash, modbus}; 
+   Flow<Flash, Modbus> flow {counter, flash, modbus}; 
 
    while(1){
-      counter();
+      flow();
       __WFI();
    }
 

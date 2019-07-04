@@ -2,6 +2,7 @@
 
 #include "pin.h"
 #include "flash.h"
+#include "counter.h"
 #include "modbus_slave.h"
 
 
@@ -41,25 +42,26 @@ struct Flash_data {
 #define ADR(reg) GET_ADR(In_regs, reg)
 
 template<class Flash, class Modbus>
-class Counter
+class Flow
 {
-   Pin& pin;
+   Counter& counter;
    Flash& flash;
    Modbus& modbus;
    Timer timer;
-   uint16_t count;
-   uint16_t reset_time = 30_s;
+   bool save {false};
+   // uint16_t count;
+   // uint16_t reset_time = 30_s;
 
 public:
-   Counter(Pin& pin,Flash& flash, Modbus& modbus) 
-      : pin {pin}
+   Flow(Counter& counter, Flash& flash, Modbus& modbus) 
+      : counter {counter}
       , flash {flash}
       , modbus {modbus}
    {}
 
    void operator()() {
 
-      modbus.outRegs.count = count;
+      modbus.outRegs.count = counter;
 
       modbus([&](uint16_t registrAddress) {
             static bool unblock = false;
@@ -89,11 +91,8 @@ public:
          } // switch
       });
 
-      count += pin ? 1 : 0;
-
-      pin ? timer.stop() : timer.start(reset_time);
-
-      count = timer.done() ? 0 : count;  
+      // if (timer.done())
+      //    counter.reset();  
 
    }//operator
 };
