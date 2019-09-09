@@ -20,9 +20,30 @@ using RTS = mcu::PA4;
 
 int main()
 {
-   decltype(auto) counter = Counter::make<mcu::Periph::TIM1, DI1>(450);
+   struct Flash_data {
+      uint16_t factory_number = 0;
+      UART::Settings uart_set = {
+       .parity_enable  = false,
+       .parity         = USART::Parity::even,
+       .data_bits      = USART::DataBits::_8,
+       .stop_bits      = USART::StopBits::_1,
+       .baudrate       = USART::Baudrate::BR9600,
+         .res            = 0
+      };
+      uint8_t  modbus_address = 1;
+      uint16_t model_number   = 0;
+   }flash;
 
-   Flash<Flash_data, mcu::FLASH::Sector::_8> flash{};
+   // decltype(auto) led = Pin::make<DO1, mcu::PinMode::Output>();
+   
+   decltype(auto) counter = Counter::make<mcu::Periph::TIM1, DI1>(45);
+
+   [[maybe_unused]] auto _ = Flash_updater<
+        mcu::FLASH::Sector::_10
+      , mcu::FLASH::Sector::_9
+   >::make (&flash);
+
+   // Flash<Flash_data, mcu::FLASH::Sector::_8> flash{};
 
    decltype(auto) modbus = Modbus_slave<In_regs, Out_regs>
                  ::make<mcu::Periph::USART1, TX, RX, RTS>
@@ -43,6 +64,7 @@ int main()
 
    while(1){
       flow();
+      // led = modbus.outRegs.count > 5000 ? true : false;
       __WFI();
    }
 

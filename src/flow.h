@@ -12,6 +12,7 @@ struct In_regs {
    uint16_t modbus_address;         // 1
    uint16_t password;               // 2
    uint16_t factory_number;         // 3
+   uint16_t value;                  // 4
 
 }__attribute__((packed));
 
@@ -24,20 +25,6 @@ struct Out_regs {
    uint16_t count;                  // 4
 
 }__attribute__((packed));
-
-struct Flash_data {
-   uint16_t factory_number = 0;
-   UART::Settings uart_set = {
-      .parity_enable  = false,
-      .parity         = USART::Parity::even,
-      .data_bits      = USART::DataBits::_8,
-      .stop_bits      = USART::StopBits::_1,
-      .baudrate       = USART::Baudrate::BR9600,
-      .res            = 0
-   };
-   uint8_t  modbus_address = 1;
-   uint16_t model_number   = 0;
-};
 
 #define ADR(reg) GET_ADR(In_regs, reg)
 
@@ -87,6 +74,9 @@ public:
                      = modbus.inRegs.factory_number;
                }
                unblock = true;
+            break;
+            case ADR(value):
+               counter.set_value(modbus.inRegs.value);
             break;
          } // switch
       });
