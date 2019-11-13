@@ -27,7 +27,7 @@ int main()
        .parity         = USART::Parity::even,
        .data_bits      = USART::DataBits::_8,
        .stop_bits      = USART::StopBits::_1,
-       .baudrate       = USART::Baudrate::BR9600,
+       .baudrate       = USART::Baudrate::BR115200,
          .res            = 0
       };
       uint8_t  modbus_address = 1;
